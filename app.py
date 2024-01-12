@@ -34,6 +34,7 @@ class BotDca:
         self.cuasovol = Frame(self.cuasochiavol,bg="white")
         self.cuasovol.pack()
         self.capnhat_list_volumes()
+
         # phần nhập thông số 
         self.cuasovaolenh = Frame(self.cuasochinh,bg="white")
         self.cuasovaolenh.pack(side=LEFT, padx=5, pady=5 , anchor=N)
@@ -57,25 +58,25 @@ class BotDca:
         self.tpnhapvao = Entry(self.cuasovaolenh,width=12,relief=SUNKEN)
         self.tpnhapvao.grid(row=1, column=4)
 
-        Button(self.cuasovaolenh,bg="deep pink", fg="white", text="Connect",width=10,font=("Helvetica",10,"bold"),command=self.connect_client).grid(row=2, column=0, columnspan=5, rowspan=2, padx=5, pady=5)
+        Label(self.cuasovaolenh,font=("Helvetica",10,"bold"),bg="white",fg="red2",text="Max Profit/Loss($):").grid(row=2,column=0,padx=5, pady=5)
+        self.max_profit_loss = Entry(self.cuasovaolenh,width=8)
+        self.max_profit_loss.grid(row=2, column=1)
 
-        # các nút vào, thoát lệnh
-        Button(self.cuasovaolenh,bg="dark green", fg="white", text="Buy Limit",width=10,font=("Helvetica",10,"bold"),command=self.buy_limit).grid(row=4, column=0)
-        Button(self.cuasovaolenh,bg="red3", fg="white", text="Sell Limit",width=10,font=("Helvetica",10,"bold"),command=self.sell_limit).grid(row=4, column=2)
-        Button(self.cuasovaolenh,bg="blue2", fg="white", text="Close All",width=10,font=("Helvetica",10,"bold"),command=self.close_all).grid(row=4, column=4)
-
-        # tạo khoảng trống
-        Label(self.cuasovaolenh, text="",bg="white").grid(row=5, column=0)
-        Label(self.cuasovaolenh, text="",bg="white").grid(row=6, column=0)
-
+        Button(self.cuasovaolenh,bg="deep pink", fg="white", text="Connect",width=10,font=("Helvetica",10,"bold"),command=self.connect_client).grid(row=3, column=0, padx=5, pady=5)
+        Button(self.cuasovaolenh,bg="blue2", fg="white", text="Close All",width=10,font=("Helvetica",10,"bold"),command=self.close_all).grid(row=3, column=2, padx=5, pady=5)
+        
+        Button(self.cuasovaolenh,bg="dark green", fg="white", text="Buy Limit",width=10,font=("Helvetica",10,"bold"),command=self.buy_limit).grid(row=4, column=1, padx=5, pady=5)
+        Button(self.cuasovaolenh,bg="red3", fg="white", text="Sell Limit",width=10,font=("Helvetica",10,"bold"),command=self.sell_limit).grid(row=4, column=3, padx=5, pady=5)
+       
         # nút set lại TP/SL
-        Button(self.cuasovaolenh,bg="orange red", fg="white",text="STL",width=10,font=("Helvetica",10,"bold"), command=self.set_stl).grid(row=7, column=0)
+        Button(self.cuasovaolenh,bg="orange red", fg="white",text="STL",width=10,font=("Helvetica",10,"bold"), command=self.set_stl).grid(row=7, column=0, padx=5, pady=5)
         self.new_stl_set = Entry(self.cuasovaolenh,width=8)
         self.new_stl_set.grid(row=7, column=1)
-        Button(self.cuasovaolenh,bg="royal blue", fg="white", text="TP",width=10,font=("Helvetica",10,"bold"), command=self.set_tp).grid(row=7, column=2)
+        Button(self.cuasovaolenh,bg="royal blue", fg="white", text="TP",width=10,font=("Helvetica",10,"bold"), command=self.set_tp).grid(row=7, column=2, padx=5, pady=5)
         self.new_tp_set = Entry(self.cuasovaolenh,width=8)
         self.new_tp_set.grid(row=7, column=3)
         Label(self.cuasovaolenh, text="",).grid(row=9, column=0)
+        
         # Đường dẫn tới client Mt5 đăng nhập acount có số lệnh cần đếm
         self.nhapduongdan = Entry(self.cuasovaolenh, width=50)
         self.nhapduongdan.grid(row=10, column=0,columnspan=4)
@@ -231,8 +232,7 @@ class BotDca:
         
         if vol not in self.danhsachvolume:
             messagebox.showwarning("Cảnh báo","VOL không hợp lệ!")
-            return
-        
+            return    
         
         # Lấy ra các giá trị volume cần đặt
         list_volumes = [vol for vol in self.danhsachvolume[self.danhsachvolume.index(vol):]]
@@ -365,6 +365,16 @@ class BotDca:
                 self.close_all()
                 self.kiemtrakhoptp = False  
                 self.kiemtravithe = False
+
+            max_profit_loss = 0.0 if not self.max_profit_loss.get() else float(self.max_profit_loss.get())
+            profit = 0.0
+            if max_profit_loss > 0.0:
+                for vithe in cacvithe:
+                    profit += vithe.profit
+                if profit >= max_profit_loss or profit <= -max_profit_loss:
+                    self.close_all()
+                    self.kiemtrakhoptp = False  
+                    self.kiemtravithe = False
         else:
             # Nếu không có vị thế nào, mà đang kiểm tra khớp TP, tức là đã hit TP/SL hết
             if self.kiemtrakhoptp:
@@ -372,7 +382,7 @@ class BotDca:
                 self.close_all()
                 self.kiemtrakhoptp = False  
                 self.kiemtravithe = False
-                
+            
     def sua_order(self, order, new_tp):
 
         if new_tp != order.tp:
