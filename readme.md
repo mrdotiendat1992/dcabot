@@ -15,14 +15,14 @@
 # Cài đặt tool DCA bot Mt5
 
 ```sh
-    1. Cài python 3.10.7 ![Alt text](image-3.png) Đánh dấu vào ô Add python 3.10 to PATH ![Alt text](image.png)
-    2_1. Cài thư viện python: tại thư mục chưa tool click vào dòng địa chỉ nhập "cmd" ![Alt text](image-1.png)
-    2_2. Nhập "pip install -r requirements.txt" ![Alt text](image-2.png)
+    1. Cài python 3.10.7 .Đánh dấu vào ô Add python 3.10 to PATH
+    2_1. Cài thư viện python: tại thư mục chưa tool click vào dòng địa chỉ nhập "cmd"
+    2_2. Nhập "pip install -r requirements.txt" 
     2_3. Nếu không chạy nhập lần lượt các lệnh: "pip install MetaTrader5" và "pip install tk"
     3. Chạy file dcabo.bat
     4. Bật chế độ cho phép chạy auto trên client Mt5
-    4_1. Chọn Tool ![Alt text](image-4.png)
-    4_2. Chọn Options ![Alt text](image-5.png)
-    4_3. Chọn One Click Trading ở Tab Trade ![Alt text](image-6.png)
-    4_4. Chọn Allow algothimic trading và bỏ chọn các ô Disable ![Alt text](image-7.png)
+    4_1. Chọn Tool
+    4_2. Chọn Options
+    4_3. Chọn One Click Trading ở Tab Trade 
+    4_4. Chọn Allow algothimic trading và bỏ chọn các ô Disable
 ```
