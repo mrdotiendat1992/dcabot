@@ -59,9 +59,14 @@ class GiaoDien:
         self.tpnhapvao = Entry(self.cuasovaolenh,width=12,relief=SUNKEN)
         self.tpnhapvao.grid(row=1, column=4)
 
-        Label(self.cuasovaolenh,font=("Helvetica",10,"bold"),bg="white",fg="red2",text="Max Profit/Loss($):").grid(row=2,column=0,padx=5, pady=5)
-        self.max_profit_loss = Entry(self.cuasovaolenh,width=8)
-        self.max_profit_loss.grid(row=2, column=1)
+        Label(self.cuasovaolenh,font=("Helvetica",10,"bold"),bg="white",fg="red2",text="Max Profit($):").grid(row=2,column=0,padx=5, pady=5)
+        self.max_profit = Entry(self.cuasovaolenh,width=8)
+        self.max_profit.grid(row=2, column=1)
+
+
+        Label(self.cuasovaolenh,font=("Helvetica",10,"bold"),bg="white",fg="red2",text="Max Loss($):").grid(row=2,column=2,padx=5, pady=5)
+        self.max_loss = Entry(self.cuasovaolenh,width=8)
+        self.max_loss.grid(row=2, column=3)
 
         Button(self.cuasovaolenh,bg="deep pink", fg="white", text="Connect",width=10,font=("Helvetica",10,"bold"),command=self.connect_client).grid(row=3, column=0, padx=5, pady=5)
         Button(self.cuasovaolenh,bg="blue2", fg="white", text="Close All",width=10,font=("Helvetica",10,"bold"),command=self.close_all).grid(row=3, column=2, padx=5, pady=5)
@@ -75,7 +80,7 @@ class GiaoDien:
         Button(self.cuasovaolenh,bg="royal blue", fg="white", text="TP",width=10,font=("Helvetica",10,"bold"), command=self.set_tp).grid(row=7, column=2, padx=5, pady=5)
         self.new_tp_set = Entry(self.cuasovaolenh,width=8)
         self.new_tp_set.grid(row=7, column=3)
-        Label(self.cuasovaolenh, text="",).grid(row=9, column=0)
+        Label(self.cuasovaolenh, text="",bg="white").grid(row=9, column=0)
         
         self.nhapduongdan1 = Entry(self.cuasovaolenh, width=50)
         self.nhapduongdan1.grid(row=10, column=0,columnspan=4, pady=5)
@@ -198,7 +203,7 @@ class GiaoDien:
         Button(self.cuasovol,bg="navy", fg="white", text="Sửa",font=("Helvetica",10,"bold"),width=10,command=self.config_volumes).grid(column=0, row=8, columnspan=2)
 
     def connect_client(self):
-        self.cacaccount.clear()
+        self.cacaccount = {}
         path1 = self.nhapduongdan1.get()
         path2 = self.nhapduongdan2.get()
         path3 = self.nhapduongdan3.get()
@@ -206,7 +211,16 @@ class GiaoDien:
         for path in [path1, path2, path3]:
             if path:
                 mt5.initialize(path=path)
-                self.cacaccount[f"account{x}"]={"path":path,"trangthai":DOIDATLENH,"solenhcu":0,"solenhmoi":0,"tp":0.0,"maxprofit":0.0,"side":None}
+                self.cacaccount[f"account{x}"]={
+                    "path":path,
+                    "trangthai":DOIDATLENH,
+                    "solenhcu":0,
+                    "solenhmoi":0,
+                    "tp":0.0,
+                    "maxprofit":0.0,
+                    "maxloss":0.0,
+                    "side":None
+                    }
                 x+=1
         
 
@@ -245,13 +259,6 @@ class GiaoDien:
         except:
             messagebox.showerror("Cảnh báo", "Vui lòng chọn TP bắt đầu là số !!!")
             return
-        maxprofit = self.max_profit_loss.get()
-        if maxprofit:
-            try:
-                maxprofit = float(maxprofit)
-            except:
-                messagebox.showerror("Cảnh báo", "Vui lòng chọn Max Profit/Loss là số !!!")
-                return
         side = "buy"
         for acc in self.cacaccount:    
             self.close_all_path(acc)
@@ -260,6 +267,7 @@ class GiaoDien:
         for acc in self.cacaccount:    
             self.cacaccount[acc]['trangthai'] = DADATLENH
             self.cacaccount[acc]['side'] = side
+            self.cacaccount[acc]['tp'] = tpnhapvao
         self.kiemtra = True
         Thread(target=lambda:self.quansat()).start()
 
@@ -294,13 +302,6 @@ class GiaoDien:
         except:
             messagebox.showerror("Cảnh báo", "Vui lòng chọn TP bắt đầu là số !!!")
             return
-        maxprofit = self.max_profit_loss.get()
-        if maxprofit:
-            try:
-                maxprofit = float(maxprofit)
-            except:
-                messagebox.showerror("Cảnh báo", "Vui lòng chọn Max Profit/Loss là số !!!")
-                return
         side = "sell"
         for path in self.cacaccount:
             self.close_all_path(path)
@@ -309,6 +310,7 @@ class GiaoDien:
         for acc in self.cacaccount:
             self.cacaccount[acc]['trangthai'] = DADATLENH
             self.cacaccount[acc]['side'] = side
+            self.cacaccount[acc]['tp'] = tpnhapvao
         self.kiemtra = True
         Thread(target=lambda:self.quansat()).start()
 
@@ -355,7 +357,8 @@ class GiaoDien:
                     "type_time": mt5.ORDER_TIME_GTC,
                 }
             mt5.order_send(request)
-    
+        self.ghilog(f"Thay doi tp lenh {position.ticket} thanh cong")
+
     def thaydoi_sl(self, position, new_sl):
         if new_sl != position.tp and position.comment == "DCABOT":
             request = {
@@ -420,6 +423,27 @@ class GiaoDien:
 
     def quansat(self):
         while self.kiemtra:
+            
+            maxprofit = self.max_profit.get()
+            if maxprofit:
+                try:
+                    maxprofit = float(maxprofit)
+                except:
+                    maxprofit = 0.0
+                finally:
+                    for acc in self.cacaccount:
+                        self.cacaccount[acc]['maxprofit'] = maxprofit
+
+            maxloss = self.max_loss.get()
+            if maxloss:
+                try:
+                    maxloss = float(maxloss)
+                except:
+                    maxloss = 0.0
+                finally:
+                    for acc in self.cacaccount:
+                        self.cacaccount[acc]['maxloss'] = maxloss
+            # print(self.cacaccount)
             for account in self.cacaccount:
                 if self.cacaccount[account]['trangthai'] == DADATLENH:
                     mt5.initialize(path=self.cacaccount[account]['path'])
@@ -432,30 +456,29 @@ class GiaoDien:
                                 bot_positions.append(position)
                         self.cacaccount[account]['solenhmoi'] = len(bot_positions)
                         if self.cacaccount[account]['solenhmoi'] > self.cacaccount[account]['solenhcu']:
-                            self.ghilog(f"{account} - Co lenh hit SL/TP, thay doi TP cac lenh")
-                            self.cacaccount[account]['solenhcu'] = self.cacaccount[account]['solenhmoi']
+                            self.ghilog(f"{account} - Co lenh khop moi, thay doi TP cac lenh")
                             new_position = bot_positions[-1]
                             new_tp = new_position.price_open + self.cacaccount[account]['tp'] if new_position.type == 0 else new_position.price_open - self.cacaccount[account]['tp']
                             for position in bot_positions:
                                 self.thaydoi_tp(position, new_tp)
-                        if self.cacaccount[account]['solenhmoi'] < self.cacaccount[account]['solenhcu']:
+                        elif self.cacaccount[account]['solenhmoi'] < self.cacaccount[account]['solenhcu']:
                             self.ghilog(f"{account} - Co lenh hit SL/TP, dong tat ca lenh")
                             self.close_all_path(account)
                             self.cacaccount[account]['trangthai'] = DOIDATLENH
                         for position in bot_positions:
                             profit += position.profit
-                        if profit > self.cacaccount[account]['maxprofit']:
-                            self.ghilog(f"{account} - Du loi nhuan, dong tat ca lenh")
-                            self.close_all_path(account)
-                            self.cacaccount[account]['trangthai'] = DOIDATLENH
-                        elif profit < -self.cacaccount[account]['maxprofit']:
-                            self.ghilog(f"{account} - Du lo, dong tat ca lenh")
-                            self.close_all_path(account)
-                            self.cacaccount[account]['trangthai'] = DOIDATLENH
-                        self.ghilog(f"{account} - Lenh cu:{self.cacaccount[account]['solenhcu']} - Lenh moi: {self.cacaccount[account]['solenhmoi']}- Profit: {profit}")
-                
-            self.cacaccount[account]['solenhcu'] = 0
-            self.cacaccount[account]['solenhmoi'] = 0
+                        if self.cacaccount[account]['maxprofit'] > 0.0:
+                            
+                            if profit > self.cacaccount[account]['maxprofit']:
+                                self.ghilog(f"{account} - Chot loi, dong tat ca lenh")
+                                self.close_all_path(account)
+
+                        elif self.cacaccount[account]['maxloss'] > 0.0:
+                            if profit < -self.cacaccount[account]['maxloss']:
+                                self.ghilog(f"{account} - Cat lo, dong tat ca lenh")
+                                self.close_all_path(account)
+
+                        self.cacaccount[account]['solenhcu'] = self.cacaccount[account]['solenhmoi']                
             bot_positions.clear()
             profit = 0
             sleep(3)
