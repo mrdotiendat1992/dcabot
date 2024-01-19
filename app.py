@@ -68,6 +68,9 @@ class BotDca:
         Button(self.cuasovaolenh,bg="dark green", fg="white", text="Buy Limit",width=10,font=("Helvetica",10,"bold"),command=self.buy_limit).grid(row=4, column=1, padx=5, pady=5)
         Button(self.cuasovaolenh,bg="red3", fg="white", text="Sell Limit",width=10,font=("Helvetica",10,"bold"),command=self.sell_limit).grid(row=4, column=3, padx=5, pady=5)
        
+
+        
+
         # nút set lại TP/SL
         Button(self.cuasovaolenh,bg="orange red", fg="white",text="STL",width=10,font=("Helvetica",10,"bold"), command=self.set_stl).grid(row=7, column=0, padx=5, pady=5)
         self.new_stl_set = Entry(self.cuasovaolenh,width=8)
@@ -77,6 +80,9 @@ class BotDca:
         self.new_tp_set.grid(row=7, column=3)
         Label(self.cuasovaolenh, text="",).grid(row=9, column=0)
         
+
+
+
         # Đường dẫn tới client Mt5 đăng nhập acount có số lệnh cần đếm
         self.nhapduongdan = Entry(self.cuasovaolenh, width=50)
         self.nhapduongdan.grid(row=10, column=0,columnspan=4)
@@ -232,7 +238,8 @@ class BotDca:
         
         if vol not in self.danhsachvolume:
             messagebox.showwarning("Cảnh báo","VOL không hợp lệ!")
-            return    
+            return
+        
         
         # Lấy ra các giá trị volume cần đặt
         list_volumes = [vol for vol in self.danhsachvolume[self.danhsachvolume.index(vol):]]

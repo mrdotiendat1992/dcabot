@@ -9,7 +9,8 @@
     6. Đóng tất cả lệnh nếu đạt đến số lãi/lỗ nhất định
     7. Chọn client Mt5 muốn đặt lệnh
     8. Sửa SL/TP tất cả các lệnh theo số nhập vào
-    9. Chạy nhiều client 1 lúc (continue...)
+    9. Chạy nhiều client 1 lúc (đồng bộ)
+    10. Chạy nhiều client không đồng bộ
 ```
 
 # Cài đặt tool DCA bot Mt5
